@@ -72,39 +72,103 @@ def flash_edge_leds(flash_seconds):
 
 def split_text_lines(text, line_count):
     line_count = clamp(int(line_count), 1, 3)
+    wrapped = wrap_text_lines(text, 16)
+    out = wrapped[:line_count]
+    while len(out) < line_count:
+        out.append("")
+    return out
+
+
+def wrap_text_lines(text, cols):
+    cols = clamp(int(cols), 8, 64)
     normalized = sanitize_lcd_text(text)
     if not normalized:
-        return [""] * line_count
-    if len(normalized) <= 16:
-        out = [normalized]
-        while len(out) < line_count:
-            out.append("")
-        return out
+        return [""]
 
     words = normalized.split(" ")
-    lines = [[] for _ in range(line_count)]
+    lines = []
+    current = ""
 
     for word in words:
-        placed = False
-        for line_words in lines:
-            probe = " ".join(line_words + [word]).strip()
-            if len(probe) <= 16:
-                line_words.append(word)
-                placed = True
-                break
+        if not current:
+            if len(word) <= cols:
+                current = word
+            else:
+                start = 0
+                while start < len(word):
+                    lines.append(word[start:start + cols])
+                    start += cols
+                current = ""
+            continue
 
-        if not placed:
+        probe = current + " " + word
+        if len(probe) <= cols:
+            current = probe
+        else:
+            lines.append(current)
+            if len(word) <= cols:
+                current = word
+            else:
+                start = 0
+                while start < len(word):
+                    lines.append(word[start:start + cols])
+                    start += cols
+                current = ""
+
+    if current:
+        lines.append(current)
+
+    if not lines:
+        return [""]
+
+    return lines
+
+
+def render_frame(lines, rows, cols):
+    lcd.clear()
+    for row in range(rows):
+        value = ""
+        if row < len(lines):
+            value = lines[row]
+        lcd.set_cursor_position(0, row)
+        lcd.write(str(value)[:cols].ljust(cols))
+
+
+def show_static(lines, rows, cols, duration):
+    render_frame(lines, rows, cols)
+    time.sleep(duration)
+
+
+def show_scrolling(lines, rows, cols, duration, step_seconds):
+    wrapped = []
+    for line in lines:
+        wrapped.extend(wrap_text_lines(line, cols))
+
+    if not wrapped:
+        wrapped = [""]
+
+    if len(wrapped) <= rows:
+        show_static(wrapped, rows, cols, duration)
+        return
+
+    windows = len(wrapped) - rows + 1
+    step_seconds = clamp(float(step_seconds), 0.2, 5.0)
+    start = time.time()
+    previous_index = -1
+
+    while True:
+        elapsed = time.time() - start
+        if elapsed >= duration:
             break
 
-    out = [" ".join(line_words).strip() for line_words in lines]
-    if not out[0]:
-        packed = []
-        for index in range(line_count):
-            start = index * 16
-            packed.append(normalized[start:start + 16])
-        return packed
+        progress = elapsed / float(duration)
+        index = int(progress * (windows - 1))
+        if index != previous_index:
+            render_frame(wrapped[index:index + rows], rows, cols)
+            previous_index = index
+        time.sleep(step_seconds)
 
-    return out
+    render_frame(wrapped[-rows:], rows, cols)
 
 
 def color_with_brightness(base_rgb, brightness):
@@ -171,6 +235,8 @@ def parse_args():
     parser.add_argument("--b", type=int, help="Backlight blue channel (0-255)")
     parser.add_argument("--brightness", type=int, help="Backlight brightness percent (0-100)")
     parser.add_argument("--contrast", type=int, help="LCD contrast (0-63)")
+    parser.add_argument("--scroll", action="store_true", help="Scroll long content during display interval")
+    parser.add_argument("--scroll-step", type=float, default=0.8, help="Seconds between scroll updates")
     return parser.parse_args()
 
 
@@ -196,18 +262,20 @@ def main():
             line1 = sanitize_lcd_text(args.title)
 
         rows = clamp(int(getattr(lcd, "ROWS", 2)), 1, 3)
+        cols = clamp(int(getattr(lcd, "COLS", 16)), 8, 32)
         if args.text:
-            lines = split_text_lines(args.text, rows)
+            if args.scroll:
+                lines = wrap_text_lines(args.text, cols)
+            else:
+                lines = split_text_lines(args.text, rows)
         else:
             lines = [line1, line2, line3]
 
-        lcd.clear()
-        for row in range(rows):
-            lcd.set_cursor_position(0, row)
-            lcd.write(fit(lines[row] if row < len(lines) else ""))
-
         flash_edge_leds(0.2)
-        time.sleep(duration)
+        if args.scroll and args.text:
+            show_scrolling(lines, rows, cols, duration, args.scroll_step)
+        else:
+            show_static(lines, rows, cols, duration)
         print("NOTIFY_OK")
     finally:
         try:
