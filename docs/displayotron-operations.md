@@ -6,6 +6,10 @@
 bash scripts/deploy-to-pi.sh --enable --start
 ```
 
+This deploy also copies `config/displayotron-settings.json` to:
+
+- `/home/pi/.config/displayotron/settings.json`
+
 ## Check health
 
 ```bash
@@ -32,6 +36,17 @@ Settings currently available:
 - Backlight brightness (`0-100%`, 10% steps)
 - LCD contrast (`0-63`, 2-step increments)
 - `StatusSvc` toggle (start/stop `displayotron-status` when menu exits)
+
+## Edit settings from git repo
+
+1. Edit `config/displayotron-settings.json`
+2. Redeploy:
+
+```bash
+bash scripts/deploy-to-pi.sh --start
+```
+
+`displayotron-status` will then use the updated theme/brightness/contrast values.
 
 ## Service control
 

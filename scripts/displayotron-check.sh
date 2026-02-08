@@ -86,6 +86,8 @@ fi
 
 if [ "$DEMO" -eq 1 ]; then
   if python3 - <<'PY'
+import sys
+
 import dothat.lcd as lcd
 import dothat.backlight as backlight
 
@@ -94,7 +96,14 @@ lcd.set_cursor_position(0, 0)
 lcd.write("Display-O-Tron")
 lcd.set_cursor_position(0, 1)
 lcd.write("check: PASS    ")
-backlight.rgb(0, 96, 160)
+
+sys.path.insert(0, "/usr/local/bin")
+try:
+    from displayotron_common import apply_display, load_settings
+
+    apply_display(lcd, backlight, load_settings())
+except Exception:
+    backlight.rgb(0, 96, 160)
 
 print("DEMO_OK")
 PY

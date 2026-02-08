@@ -1,34 +1,25 @@
 #!/usr/bin/env python3
 from __future__ import print_function
 
-import json
-import os
 import signal
 import subprocess
 import time
 
-import dothat.backlight as backlight
 import dothat.lcd as lcd
 import dothat.touch as nav
+import dothat.backlight as backlight
 
+from displayotron_common import SETTINGS_PATH
+from displayotron_common import THEMES
+from displayotron_common import apply_display
+from displayotron_common import clamp
+from displayotron_common import load_settings
+from displayotron_common import save_settings
+from displayotron_common import theme_name
 
-SETTINGS_PATH = os.path.expanduser("~/.config/displayotron/menu-settings.json")
 SERVICE_NAME = "displayotron-status"
 
-THEMES = [
-    ("Blue", (0, 96, 160)),
-    ("Green", (0, 140, 40)),
-    ("Amber", (160, 90, 0)),
-    ("White", (180, 180, 180)),
-    ("Purple", (120, 40, 160)),
-    ("Off", (0, 0, 0)),
-]
-
 ITEMS = ["Theme", "Bright", "Contrast", "StatusSvc", "SaveExit"]
-
-
-def clamp(value, low, high):
-    return max(low, min(high, value))
 
 
 def fit(text):
@@ -45,7 +36,7 @@ def is_press(event):
 
 
 def run_quiet(command):
-    with open(os.devnull, "w") as devnull:
+    with open("/dev/null", "w") as devnull:
         return subprocess.call(command, stdout=devnull, stderr=devnull)
 
 
@@ -55,59 +46,22 @@ class MenuApp(object):
         self.index = 0
         self.needs_redraw = True
         self.status_was_active = False
-
-        self.theme_index = 0
-        self.brightness = 70
-        self.contrast = 45
-        self.status_service_enabled = True
-
-        self.load_settings()
-
-    def load_settings(self):
-        try:
-            with open(SETTINGS_PATH, "r") as settings_file:
-                data = json.load(settings_file)
-        except (IOError, ValueError):
-            return
-
-        self.theme_index = clamp(int(data.get("theme_index", self.theme_index)), 0, len(THEMES) - 1)
-        self.brightness = clamp(int(data.get("brightness", self.brightness)), 0, 100)
-        self.contrast = clamp(int(data.get("contrast", self.contrast)), 0, 63)
-        self.status_service_enabled = bool(data.get("status_service_enabled", self.status_service_enabled))
-
-    def save_settings(self):
-        directory = os.path.dirname(SETTINGS_PATH)
-        if not os.path.isdir(directory):
-            os.makedirs(directory)
-
-        data = {
-            "theme_index": self.theme_index,
-            "brightness": self.brightness,
-            "contrast": self.contrast,
-            "status_service_enabled": self.status_service_enabled,
-        }
-
-        with open(SETTINGS_PATH, "w") as settings_file:
-            json.dump(data, settings_file, indent=2, sort_keys=True)
+        self.settings = load_settings()
+        self.settings_path = SETTINGS_PATH
 
     def apply_display(self):
-        base = THEMES[self.theme_index][1]
-        scaled = []
-        for value in base:
-            scaled.append(int(value * self.brightness / 100.0))
-        backlight.rgb(scaled[0], scaled[1], scaled[2])
-        lcd.set_contrast(self.contrast)
+        apply_display(lcd, backlight, self.settings)
 
     def line_value(self):
         item = ITEMS[self.index]
         if item == "Theme":
-            return "{}".format(THEMES[self.theme_index][0])
+            return "{}".format(theme_name(self.settings["theme_index"]))
         if item == "Bright":
-            return "{}%".format(self.brightness)
+            return "{}%".format(self.settings["brightness"])
         if item == "Contrast":
-            return "{}".format(self.contrast)
+            return "{}".format(self.settings["contrast"])
         if item == "StatusSvc":
-            return "{}".format("on" if self.status_service_enabled else "off")
+            return "{}".format("on" if self.settings["status_service_enabled"] else "off")
         return "B=save C=quit"
 
     def draw(self):
@@ -126,14 +80,14 @@ class MenuApp(object):
     def adjust(self, delta):
         item = ITEMS[self.index]
         if item == "Theme":
-            self.theme_index = (self.theme_index + delta) % len(THEMES)
+            self.settings["theme_index"] = (self.settings["theme_index"] + delta) % len(THEMES)
         elif item == "Bright":
-            self.brightness = clamp(self.brightness + (delta * 10), 0, 100)
+            self.settings["brightness"] = clamp(self.settings["brightness"] + (delta * 10), 0, 100)
         elif item == "Contrast":
-            self.contrast = clamp(self.contrast + (delta * 2), 0, 63)
+            self.settings["contrast"] = clamp(self.settings["contrast"] + (delta * 2), 0, 63)
         elif item == "StatusSvc":
             if delta != 0:
-                self.status_service_enabled = not self.status_service_enabled
+                self.settings["status_service_enabled"] = not self.settings["status_service_enabled"]
         else:
             return
 
@@ -145,7 +99,7 @@ class MenuApp(object):
             self.finish()
 
     def finish(self):
-        self.save_settings()
+        save_settings(self.settings, self.settings_path)
         self.running = False
 
     def pause_status_service(self):
@@ -154,7 +108,7 @@ class MenuApp(object):
             run_quiet(["sudo", "-n", "systemctl", "stop", SERVICE_NAME])
 
     def restore_status_service(self):
-        if self.status_service_enabled:
+        if self.settings["status_service_enabled"]:
             run_quiet(["sudo", "-n", "systemctl", "start", SERVICE_NAME])
         elif self.status_was_active:
             run_quiet(["sudo", "-n", "systemctl", "stop", SERVICE_NAME])

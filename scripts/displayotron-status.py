@@ -5,6 +5,9 @@ import time
 import dothat.backlight as backlight
 import dothat.lcd as lcd
 
+from displayotron_common import apply_display
+from displayotron_common import load_settings
+
 
 def fit(text):
     return str(text)[:16].ljust(16)
@@ -43,8 +46,9 @@ def draw():
 
 
 def main():
-    backlight.rgb(0, 96, 160)
     while True:
+        settings = load_settings()
+        apply_display(lcd, backlight, settings)
         draw()
         time.sleep(5)
 
