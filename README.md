@@ -7,6 +7,7 @@ This repo tracks local scripts and service files for a Raspberry Pi with a Pimor
 - `scripts/displayotron-check.sh` - hardware/software smoke checks, optional demo write
 - `scripts/displayotron-status.py` - boot-time status display loop (IP + uptime)
 - `scripts/displayotron-menu.py` - touch-driven settings menu for backlight/contrast/service mode
+- `scripts/displayotron-notify.py` - temporary notification overlay on the LCD + side LEDs
 - `scripts/displayotron_common.py` - shared settings/theme helpers used by scripts
 - `scripts/deploy-to-pi.sh` - deploy tracked scripts and service files to a Pi
 - `config/displayotron-settings.json` - tracked settings file deployed to Pi
@@ -40,6 +41,7 @@ bash scripts/deploy-to-pi.sh --host pi@raspberrypi.local --enable --start
 ssh rpi "displayotron-check"
 ssh rpi "systemctl status displayotron-status --no-pager"
 ssh rpi "displayotron-check --leds"
+ssh rpi "displayotron-notify --text 'Reply ready. Please check terminal.' --r 255 --g 0 --b 0 --brightness 50 --seconds 5"
 ```
 
 ## Settings source of truth

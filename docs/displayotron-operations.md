@@ -16,6 +16,19 @@ This deploy also copies `config/displayotron-settings.json` to:
 ssh rpi "displayotron-check"
 ssh rpi "displayotron-check --demo"
 ssh rpi "displayotron-check --leds"
+ssh rpi "displayotron-notify --text 'Reply ready. Please check terminal.' --r 255 --g 0 --b 0 --brightness 50 --seconds 5"
+```
+
+## Show temporary notification
+
+```bash
+ssh rpi "displayotron-notify --text 'Input required. Please check terminal.' --r 255 --g 0 --b 0 --brightness 50 --seconds 8"
+```
+
+You can also provide explicit line content:
+
+```bash
+ssh rpi "displayotron-notify --line1 'Reply ready' --line2 'Please check' --line3 'terminal' --seconds 8"
 ```
 
 ## Touch settings menu
