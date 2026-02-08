@@ -47,6 +47,21 @@ ssh rpi "displayotron-check --leds"
 ssh rpi "displayotron-notify --text 'Reply ready. Please check terminal.' --r 255 --g 0 --b 0 --brightness 50 --seconds 5"
 ```
 
+## Status pages and touch controls
+
+`displayotron-status` now has two pages:
+
+- Page 1: 3-line clock view
+- Page 2: IP + uptime
+
+Touch controls while status is running:
+
+- `LEFT/RIGHT`: switch pages
+- `UP/DOWN`: brightness down/up in 10% steps
+- `CANCEL` (back): open `displayotron-menu`
+
+Status and menu touch handlers apply debounce to reduce accidental double inputs.
+
 ## Safe unplug indicator
 
 After deploy, shutdown automatically triggers a Display-O-Tron message:

@@ -1,6 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 from __future__ import print_function
 
+import os
 import signal
 import subprocess
 import time
@@ -46,6 +47,10 @@ class MenuApp(object):
         self.index = 0
         self.needs_redraw = True
         self.status_was_active = False
+        self.embedded = os.environ.get("DISPLAYOTRON_MENU_EMBEDDED", "0") == "1"
+        self.input_ready_at = time.time() + 0.45
+        self.debounce_seconds = 0.2
+        self.last_input_at = {}
         self.settings = load_settings()
         self.settings_path = SETTINGS_PATH
 
@@ -103,15 +108,34 @@ class MenuApp(object):
         self.running = False
 
     def pause_status_service(self):
+        if self.embedded:
+            return
         if run_quiet(["sudo", "-n", "systemctl", "is-active", "--quiet", SERVICE_NAME]) == 0:
             self.status_was_active = True
             run_quiet(["sudo", "-n", "systemctl", "stop", SERVICE_NAME])
 
     def restore_status_service(self):
+        if self.embedded:
+            return
         if self.settings["status_service_enabled"]:
             run_quiet(["sudo", "-n", "systemctl", "start", SERVICE_NAME])
         elif self.status_was_active:
             run_quiet(["sudo", "-n", "systemctl", "stop", SERVICE_NAME])
+
+    def allow_input(self, key, event):
+        if not is_press(event):
+            return False
+
+        now = time.time()
+        if now < self.input_ready_at:
+            return False
+
+        previous = self.last_input_at.get(key, 0.0)
+        if now - previous < self.debounce_seconds:
+            return False
+
+        self.last_input_at[key] = now
+        return True
 
 
 APP = MenuApp()
@@ -125,42 +149,42 @@ def on_signal(signum, frame):
 @nav.on(nav.UP)
 def on_up(channel, event):
     del channel
-    if is_press(event):
+    if APP.allow_input("up", event):
         APP.move(-1)
 
 
 @nav.on(nav.DOWN)
 def on_down(channel, event):
     del channel
-    if is_press(event):
+    if APP.allow_input("down", event):
         APP.move(1)
 
 
 @nav.on(nav.LEFT)
 def on_left(channel, event):
     del channel
-    if is_press(event):
+    if APP.allow_input("left", event):
         APP.adjust(-1)
 
 
 @nav.on(nav.RIGHT)
 def on_right(channel, event):
     del channel
-    if is_press(event):
+    if APP.allow_input("right", event):
         APP.adjust(1)
 
 
 @nav.on(nav.BUTTON)
 def on_button(channel, event):
     del channel
-    if is_press(event):
+    if APP.allow_input("button", event):
         APP.select()
 
 
 @nav.on(nav.CANCEL)
 def on_cancel(channel, event):
     del channel
-    if is_press(event):
+    if APP.allow_input("cancel", event):
         APP.finish()
 
 

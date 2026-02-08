@@ -37,6 +37,21 @@ ssh rpi "displayotron-notify --line1 'Reply ready' --line2 'Please check' --line
 ssh rpi "displayotron-menu"
 ```
 
+## Status pages and touch controls
+
+While `displayotron-status` is running:
+
+- Page 1: 3-line clock view
+- Page 2: IP + uptime
+
+Controls:
+
+- `LEFT/RIGHT`: switch status pages
+- `UP/DOWN`: adjust backlight brightness (10% steps)
+- `CANCEL` (back): open settings menu
+
+Touch input is debounced in both status and menu views to reduce accidental double presses.
+
 Menu controls:
 
 - `UP/DOWN`: select menu item
