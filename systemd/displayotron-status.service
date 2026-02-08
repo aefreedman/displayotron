@@ -1,0 +1,15 @@
+[Unit]
+Description=Display-O-Tron status display
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+ExecStart=/usr/bin/env python3 /usr/local/bin/displayotron-status
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
