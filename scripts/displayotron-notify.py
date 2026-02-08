@@ -70,6 +70,95 @@ def flash_edge_leds(flash_seconds):
     clear_graph_leds()
 
 
+def flash_middle_leds(count):
+    num_leds = int(getattr(backlight, "NUM_LEDS", 6))
+    if num_leds <= 0:
+        return
+
+    if num_leds == 1:
+        middle = [0]
+    elif num_leds % 2 == 0:
+        middle = [max(0, (num_leds // 2) - 1), min(num_leds - 1, num_leds // 2)]
+    else:
+        middle = [num_leds // 2]
+
+    for _ in range(max(1, int(count))):
+        clear_graph_leds()
+        for led in middle:
+            backlight.graph_set_led_polarity(led, 1)
+            backlight.graph_set_led_state(led, 0)
+        time.sleep(0.09)
+        clear_graph_leds()
+        time.sleep(0.07)
+
+
+def sweep_leds_once(step_seconds, reverse_order):
+    num_leds = int(getattr(backlight, "NUM_LEDS", 6))
+    if num_leds <= 0:
+        return
+
+    delay = clamp(float(step_seconds), 0.03, 1.0)
+    order = list(range(num_leds))
+    if reverse_order:
+        order = list(reversed(order))
+
+    for led in order:
+        clear_graph_leds()
+        backlight.graph_set_led_polarity(led, 1)
+        backlight.graph_set_led_state(led, 0)
+        time.sleep(delay)
+    clear_graph_leds()
+
+
+def index_scan_leds(cycles):
+    num_leds = int(getattr(backlight, "NUM_LEDS", 6))
+    if num_leds <= 0:
+        return
+
+    rows = clamp(int(getattr(lcd, "ROWS", 2)), 1, 3)
+    for _ in range(max(1, int(cycles))):
+        for led in range(num_leds):
+            clear_graph_leds()
+            backlight.graph_set_led_polarity(led, 1)
+            backlight.graph_set_led_state(led, 0)
+
+            lcd.clear()
+            lcd.set_cursor_position(0, 0)
+            lcd.write(fit("LED index scan"))
+            lcd.set_cursor_position(0, 1)
+            lcd.write(fit("active index:{}".format(led)))
+            if rows >= 3:
+                lcd.set_cursor_position(0, 2)
+                lcd.write(fit("top/bot? note"))
+            time.sleep(0.35)
+
+    clear_graph_leds()
+
+
+def run_led_pattern(name, sweep_step, reverse_order):
+    pattern = str(name or "edgeQuick")
+    if pattern == "none":
+        clear_graph_leds()
+        return
+    if pattern == "edgeQuick":
+        flash_edge_leds(0.2)
+        return
+    if pattern == "verticalSweepQuick":
+        sweep_leds_once(sweep_step, reverse_order)
+        return
+    if pattern == "middleDouble":
+        flash_middle_leds(2)
+        return
+    if pattern == "middleTriple":
+        flash_middle_leds(3)
+        return
+    if pattern == "indexScan":
+        index_scan_leds(2)
+        return
+
+    clear_graph_leds()
+
+
 def split_text_lines(text, line_count):
     line_count = clamp(int(line_count), 1, 3)
     wrapped = wrap_text_lines(text, 16)
@@ -237,6 +326,14 @@ def parse_args():
     parser.add_argument("--contrast", type=int, help="LCD contrast (0-63)")
     parser.add_argument("--scroll", action="store_true", help="Scroll long content during display interval")
     parser.add_argument("--scroll-step", type=float, default=0.8, help="Seconds between scroll updates")
+    parser.add_argument(
+        "--led-pattern",
+        default="edgeQuick",
+        choices=["none", "edgeQuick", "verticalSweepQuick", "middleDouble", "middleTriple", "indexScan"],
+        help="LED animation profile",
+    )
+    parser.add_argument("--led-step", type=float, default=0.06, help="Step delay for sweep pattern")
+    parser.add_argument("--led-reverse", action="store_true", help="Reverse sweep LED index order")
     return parser.parse_args()
 
 
@@ -271,7 +368,7 @@ def main():
         else:
             lines = [line1, line2, line3]
 
-        flash_edge_leds(0.2)
+        run_led_pattern(args.led_pattern, args.led_step, args.led_reverse)
         if args.scroll and args.text:
             show_scrolling(lines, rows, cols, duration, args.scroll_step)
         else:
