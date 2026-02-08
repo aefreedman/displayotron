@@ -55,11 +55,13 @@ CHECK_SCRIPT="$ROOT_DIR/scripts/displayotron-check.sh"
 STATUS_SCRIPT="$ROOT_DIR/scripts/displayotron-status.py"
 MENU_SCRIPT="$ROOT_DIR/scripts/displayotron-menu.py"
 NOTIFY_SCRIPT="$ROOT_DIR/scripts/displayotron-notify.py"
+SAFE_UNPLUG_SCRIPT="$ROOT_DIR/scripts/displayotron-safe-unplug.py"
 COMMON_PY="$ROOT_DIR/scripts/displayotron_common.py"
 SETTINGS_FILE="$ROOT_DIR/config/displayotron-settings.json"
 SERVICE_FILE="$ROOT_DIR/systemd/displayotron-status.service"
+SAFE_UNPLUG_SERVICE_FILE="$ROOT_DIR/systemd/displayotron-safe-unplug.service"
 
-for path in "$CHECK_SCRIPT" "$STATUS_SCRIPT" "$MENU_SCRIPT" "$NOTIFY_SCRIPT" "$COMMON_PY" "$SETTINGS_FILE" "$SERVICE_FILE"; do
+for path in "$CHECK_SCRIPT" "$STATUS_SCRIPT" "$MENU_SCRIPT" "$NOTIFY_SCRIPT" "$SAFE_UNPLUG_SCRIPT" "$COMMON_PY" "$SETTINGS_FILE" "$SERVICE_FILE" "$SAFE_UNPLUG_SERVICE_FILE"; do
   if [ ! -f "$path" ]; then
     echo "Missing file: $path" >&2
     exit 1
@@ -71,11 +73,13 @@ scp "$CHECK_SCRIPT" "$HOST:/tmp/displayotron-check.sh"
 scp "$STATUS_SCRIPT" "$HOST:/tmp/displayotron-status.py"
 scp "$MENU_SCRIPT" "$HOST:/tmp/displayotron-menu.py"
 scp "$NOTIFY_SCRIPT" "$HOST:/tmp/displayotron-notify.py"
+scp "$SAFE_UNPLUG_SCRIPT" "$HOST:/tmp/displayotron-safe-unplug.py"
 scp "$COMMON_PY" "$HOST:/tmp/displayotron_common.py"
 scp "$SETTINGS_FILE" "$HOST:/tmp/displayotron-settings.json"
 scp "$SERVICE_FILE" "$HOST:/tmp/displayotron-status.service"
+scp "$SAFE_UNPLUG_SERVICE_FILE" "$HOST:/tmp/displayotron-safe-unplug.service"
 
-ssh "$HOST" "sudo install -m 755 /tmp/displayotron-check.sh /usr/local/bin/displayotron-check && sudo install -m 755 /tmp/displayotron-status.py /usr/local/bin/displayotron-status && sudo install -m 755 /tmp/displayotron-menu.py /usr/local/bin/displayotron-menu && sudo install -m 755 /tmp/displayotron-notify.py /usr/local/bin/displayotron-notify && sudo install -m 644 /tmp/displayotron_common.py /usr/local/bin/displayotron_common.py && sudo install -d -m 755 -o pi -g pi /home/pi/.config/displayotron && sudo install -m 644 -o pi -g pi /tmp/displayotron-settings.json /home/pi/.config/displayotron/settings.json && sudo install -m 644 /tmp/displayotron-status.service /etc/systemd/system/displayotron-status.service && rm -f /tmp/displayotron-check.sh /tmp/displayotron-status.py /tmp/displayotron-menu.py /tmp/displayotron-notify.py /tmp/displayotron_common.py /tmp/displayotron-settings.json /tmp/displayotron-status.service && sudo systemctl daemon-reload"
+ssh "$HOST" "sudo install -m 755 /tmp/displayotron-check.sh /usr/local/bin/displayotron-check && sudo install -m 755 /tmp/displayotron-status.py /usr/local/bin/displayotron-status && sudo install -m 755 /tmp/displayotron-menu.py /usr/local/bin/displayotron-menu && sudo install -m 755 /tmp/displayotron-notify.py /usr/local/bin/displayotron-notify && sudo install -m 755 /tmp/displayotron-safe-unplug.py /usr/local/bin/displayotron-safe-unplug && sudo install -m 644 /tmp/displayotron_common.py /usr/local/bin/displayotron_common.py && sudo install -d -m 755 -o pi -g pi /home/pi/.config/displayotron && sudo install -m 644 -o pi -g pi /tmp/displayotron-settings.json /home/pi/.config/displayotron/settings.json && sudo install -m 644 /tmp/displayotron-status.service /etc/systemd/system/displayotron-status.service && sudo install -m 644 /tmp/displayotron-safe-unplug.service /etc/systemd/system/displayotron-safe-unplug.service && rm -f /tmp/displayotron-check.sh /tmp/displayotron-status.py /tmp/displayotron-menu.py /tmp/displayotron-notify.py /tmp/displayotron-safe-unplug.py /tmp/displayotron_common.py /tmp/displayotron-settings.json /tmp/displayotron-status.service /tmp/displayotron-safe-unplug.service && sudo systemctl daemon-reload && sudo systemctl enable displayotron-safe-unplug.service"
 
 if [ "$ENABLE" -eq 1 ]; then
   echo "Enabling displayotron-status service"

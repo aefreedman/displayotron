@@ -1,0 +1,13 @@
+[Unit]
+Description=Display safe unplug notice during shutdown
+DefaultDependencies=no
+Before=shutdown.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /usr/local/bin/displayotron-safe-unplug
+TimeoutStartSec=10
+
+[Install]
+WantedBy=halt.target
+WantedBy=poweroff.target

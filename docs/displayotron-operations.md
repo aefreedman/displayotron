@@ -93,6 +93,29 @@ bash scripts/deploy-to-pi.sh --start
 ssh rpi "sudo systemctl status displayotron-status --no-pager"
 ssh rpi "sudo systemctl restart displayotron-status"
 ssh rpi "sudo systemctl disable --now displayotron-status"
+ssh rpi "sudo systemctl status displayotron-safe-unplug --no-pager"
+```
+
+## Safe unplug workflow
+
+Use normal shutdown:
+
+```bash
+ssh rpi "sudo shutdown -h now"
+```
+
+During halt, the shutdown hook sets the display to:
+
+- `SAFE TO UNPLUG`
+- `SYSTEM HALTED`
+- `REMOVE POWER`
+
+The shutdown indicator intentionally keeps graph/side LEDs off.
+
+If you want to test the indicator without shutting down:
+
+```bash
+ssh rpi "sudo systemctl start displayotron-safe-unplug"
 ```
 
 ## Logs
