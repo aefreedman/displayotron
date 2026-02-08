@@ -13,6 +13,26 @@ ssh rpi "displayotron-check"
 ssh rpi "displayotron-check --demo"
 ```
 
+## Touch settings menu
+
+```bash
+ssh rpi "displayotron-menu"
+```
+
+Menu controls:
+
+- `UP/DOWN`: select menu item
+- `LEFT/RIGHT`: change selected value
+- `BUTTON`: activate `SaveExit`
+- `CANCEL`: save and exit
+
+Settings currently available:
+
+- Theme preset (`Blue`, `Green`, `Amber`, `White`, `Purple`, `Off`)
+- Backlight brightness (`0-100%`, 10% steps)
+- LCD contrast (`0-63`, 2-step increments)
+- `StatusSvc` toggle (start/stop `displayotron-status` when menu exits)
+
 ## Service control
 
 ```bash
@@ -26,3 +46,12 @@ ssh rpi "sudo systemctl disable --now displayotron-status"
 ```bash
 ssh rpi "journalctl -u displayotron-status -n 100 --no-pager"
 ```
+
+## Backlight control surface (Python)
+
+From `dothat.backlight`:
+
+- `rgb(r, g, b)` full backlight color
+- `left_rgb(...)`, `mid_rgb(...)`, `right_rgb(...)` segmented color control
+- `off()` turn backlight off
+- `set_graph(...)` and `set_bar(...)` graph LEDs

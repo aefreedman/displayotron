@@ -53,9 +53,10 @@ ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 CHECK_SCRIPT="$ROOT_DIR/scripts/displayotron-check.sh"
 STATUS_SCRIPT="$ROOT_DIR/scripts/displayotron-status.py"
+MENU_SCRIPT="$ROOT_DIR/scripts/displayotron-menu.py"
 SERVICE_FILE="$ROOT_DIR/systemd/displayotron-status.service"
 
-for path in "$CHECK_SCRIPT" "$STATUS_SCRIPT" "$SERVICE_FILE"; do
+for path in "$CHECK_SCRIPT" "$STATUS_SCRIPT" "$MENU_SCRIPT" "$SERVICE_FILE"; do
   if [ ! -f "$path" ]; then
     echo "Missing file: $path" >&2
     exit 1
@@ -65,9 +66,10 @@ done
 echo "Deploying files to $HOST"
 scp "$CHECK_SCRIPT" "$HOST:/tmp/displayotron-check.sh"
 scp "$STATUS_SCRIPT" "$HOST:/tmp/displayotron-status.py"
+scp "$MENU_SCRIPT" "$HOST:/tmp/displayotron-menu.py"
 scp "$SERVICE_FILE" "$HOST:/tmp/displayotron-status.service"
 
-ssh "$HOST" "sudo install -m 755 /tmp/displayotron-check.sh /usr/local/bin/displayotron-check && sudo install -m 755 /tmp/displayotron-status.py /usr/local/bin/displayotron-status && sudo install -m 644 /tmp/displayotron-status.service /etc/systemd/system/displayotron-status.service && rm -f /tmp/displayotron-check.sh /tmp/displayotron-status.py /tmp/displayotron-status.service && sudo systemctl daemon-reload"
+ssh "$HOST" "sudo install -m 755 /tmp/displayotron-check.sh /usr/local/bin/displayotron-check && sudo install -m 755 /tmp/displayotron-status.py /usr/local/bin/displayotron-status && sudo install -m 755 /tmp/displayotron-menu.py /usr/local/bin/displayotron-menu && sudo install -m 644 /tmp/displayotron-status.service /etc/systemd/system/displayotron-status.service && rm -f /tmp/displayotron-check.sh /tmp/displayotron-status.py /tmp/displayotron-menu.py /tmp/displayotron-status.service && sudo systemctl daemon-reload"
 
 if [ "$ENABLE" -eq 1 ]; then
   echo "Enabling displayotron-status service"
