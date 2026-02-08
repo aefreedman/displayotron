@@ -22,10 +22,22 @@ except Exception:
 
 
 SERVICE_NAME = "displayotron-status"
+SAFE_LCD_ASCII = set(chr(code) for code in range(32, 127))
 
 
 def fit(text):
     return str(text)[:16].ljust(16)
+
+
+def sanitize_lcd_text(value):
+    text = " ".join(str(value).split())
+    sanitized = []
+    for char in text:
+        if char in SAFE_LCD_ASCII:
+            sanitized.append(char)
+        else:
+            sanitized.append("?")
+    return "".join(sanitized)
 
 
 def run_quiet(command):
@@ -60,7 +72,7 @@ def flash_edge_leds(flash_seconds):
 
 def split_text_lines(text, line_count):
     line_count = clamp(int(line_count), 1, 3)
-    normalized = " ".join(str(text).split())
+    normalized = sanitize_lcd_text(text)
     if not normalized:
         return [""] * line_count
     if len(normalized) <= 16:
@@ -93,8 +105,6 @@ def split_text_lines(text, line_count):
         return packed
 
     return out
-
-    return " ".join(line1_words), " ".join(line2_words)
 
 
 def color_with_brightness(base_rgb, brightness):
@@ -179,11 +189,11 @@ def main():
 
         apply_notify_style(settings, args)
 
-        line1 = args.line1
-        line2 = args.line2
-        line3 = args.line3
+        line1 = sanitize_lcd_text(args.line1)
+        line2 = sanitize_lcd_text(args.line2)
+        line3 = sanitize_lcd_text(args.line3)
         if args.title:
-            line1 = args.title
+            line1 = sanitize_lcd_text(args.title)
 
         rows = clamp(int(getattr(lcd, "ROWS", 2)), 1, 3)
         if args.text:
