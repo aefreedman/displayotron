@@ -2,13 +2,29 @@
 set -euo pipefail
 
 DEMO=0
-if [ "${1:-}" = "--demo" ]; then
-  DEMO=1
-elif [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]; then
-  echo "Usage: displayotron-check [--demo]"
-  echo "  --demo  Write test text + backlight color after checks"
-  exit 0
-fi
+LEDS=0
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --demo)
+      DEMO=1
+      ;;
+    --leds)
+      LEDS=1
+      ;;
+    -h|--help)
+      echo "Usage: displayotron-check [--demo] [--leds]"
+      echo "  --demo  Write test text + backlight color after checks"
+      echo "  --leds  Run side LED animation test"
+      exit 0
+      ;;
+    *)
+      echo "Unknown argument: $1" >&2
+      exit 1
+      ;;
+  esac
+  shift
+done
 
 STATUS=0
 
@@ -111,6 +127,67 @@ PY
     ok "Demo written to LCD and backlight set"
   else
     fail "Demo write failed"
+  fi
+fi
+
+if [ "$LEDS" -eq 1 ]; then
+  if python3 - <<'PY'
+import subprocess
+import sys
+import time
+
+import dothat.backlight as backlight
+import dothat.lcd as lcd
+
+
+def run_quiet(command):
+    with open('/dev/null', 'w') as devnull:
+        return subprocess.call(command, stdout=devnull, stderr=devnull)
+
+
+had_status = run_quiet(['sudo', '-n', 'systemctl', 'is-active', '--quiet', 'displayotron-status']) == 0
+if had_status:
+    run_quiet(['sudo', '-n', 'systemctl', 'stop', 'displayotron-status'])
+
+try:
+    lcd.clear()
+    lcd.set_cursor_position(0, 0)
+    lcd.write('Side LED test   ')
+    lcd.set_cursor_position(0, 1)
+    lcd.write('Look now...     ')
+
+    sys.path.insert(0, '/usr/local/bin')
+    try:
+        from displayotron_common import apply_display, load_settings
+
+        apply_display(lcd, backlight, load_settings())
+    except Exception:
+        backlight.rgb(0, 0, 80)
+
+    for percent in [0.0, 0.17, 0.34, 0.51, 0.68, 0.85, 1.0, 0.85, 0.68, 0.51, 0.34, 0.17, 0.0]:
+        backlight.set_graph(percent)
+        time.sleep(0.2)
+
+    num_leds = int(getattr(backlight, 'NUM_LEDS', 6))
+    for _ in range(2):
+        for idx in range(num_leds):
+            for led in range(num_leds):
+                backlight.graph_set_led_polarity(led, 0)
+                backlight.graph_set_led_state(led, 0)
+            backlight.graph_set_led_polarity(idx, 1)
+            backlight.graph_set_led_state(idx, 0)
+            time.sleep(0.15)
+
+    backlight.set_graph(0)
+    print('LEDS_OK')
+finally:
+    if had_status:
+        run_quiet(['sudo', '-n', 'systemctl', 'start', 'displayotron-status'])
+PY
+  then
+    ok "Side LED animation test completed"
+  else
+    fail "Side LED animation test failed"
   fi
 fi
 

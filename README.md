@@ -39,6 +39,7 @@ bash scripts/deploy-to-pi.sh --host pi@raspberrypi.local --enable --start
 ```bash
 ssh rpi "displayotron-check"
 ssh rpi "systemctl status displayotron-status --no-pager"
+ssh rpi "displayotron-check --leds"
 ```
 
 ## Settings source of truth

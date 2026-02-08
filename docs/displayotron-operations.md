@@ -15,6 +15,7 @@ This deploy also copies `config/displayotron-settings.json` to:
 ```bash
 ssh rpi "displayotron-check"
 ssh rpi "displayotron-check --demo"
+ssh rpi "displayotron-check --leds"
 ```
 
 ## Touch settings menu
