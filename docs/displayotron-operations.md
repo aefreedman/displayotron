@@ -51,6 +51,31 @@ Settings currently available:
 - LCD contrast (`0-63`, 2-step increments)
 - `StatusSvc` toggle (start/stop `displayotron-status` when menu exits)
 
+## Known hardware limitation: no true text rotation
+
+The Display-O-Tron character LCD stack (`dothat` -> `st7036`) does not expose a 180-degree
+glyph rotation mode. We can remap touch direction, but cannot make letters render upright when
+the display is physically upside down.
+
+Evidence collected on-device:
+
+- Available `st7036.st7036` methods include cursor/shift/contrast APIs, but no rotate/invert API.
+- `set_display_mode(enable, cursor, blink)` only toggles display/cursor/blink.
+- `set_cursor_position(column, row)` writes DDRAM offsets only.
+- `write(value)` sends raw character bytes via SPI (`self.spi.xfer([i])`).
+
+Repro commands:
+
+```bash
+ssh rpi "python3 - <<'PY'
+import inspect, st7036
+print([n for n in dir(st7036.st7036) if not n.startswith('_')])
+print(inspect.getsource(st7036.st7036.set_display_mode))
+print(inspect.getsource(st7036.st7036.set_cursor_position))
+print(inspect.getsource(st7036.st7036.write))
+PY"
+```
+
 ## Edit settings from git repo
 
 1. Edit `config/displayotron-settings.json`
