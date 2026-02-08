@@ -1,5 +1,6 @@
 {
   "brightness": 70,
+  "clock_blink_colon": true,
   "contrast": 45,
   "status_service_enabled": true,
   "theme_index": 2

@@ -30,6 +30,7 @@ def default_settings():
         "brightness": 70,
         "contrast": 45,
         "status_service_enabled": True,
+        "clock_blink_colon": True,
     }
 
 
@@ -62,6 +63,11 @@ def normalize_settings(data):
         settings["status_service_enabled"] = _coerce_bool(
             data["status_service_enabled"],
             settings["status_service_enabled"],
+        )
+    if "clock_blink_colon" in data:
+        settings["clock_blink_colon"] = _coerce_bool(
+            data["clock_blink_colon"],
+            settings["clock_blink_colon"],
         )
 
     return settings

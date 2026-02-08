@@ -51,7 +51,7 @@ ssh rpi "displayotron-notify --text 'Reply ready. Please check terminal.' --r 25
 
 `displayotron-status` now has two pages:
 
-- Page 1: 3-line clock view
+- Page 1: large 3-line `HH:MM` digital clock
 - Page 2: IP + uptime
 
 Touch controls while status is running:
@@ -61,6 +61,7 @@ Touch controls while status is running:
 - `CANCEL` (back): open `displayotron-menu`
 
 Status and menu touch handlers apply debounce to reduce accidental double inputs.
+Clock colon blink can be toggled in `displayotron-menu` via `ClockBlink`.
 
 ## Safe unplug indicator
 

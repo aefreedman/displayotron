@@ -20,6 +20,19 @@ from displayotron_common import save_settings
 
 STATUS_PAGES = 2
 
+DIGIT_GLYPHS = {
+    "0": [" _ ", "| |", "|_|"],
+    "1": ["   ", "  |", "  |"],
+    "2": [" _ ", " _|", "|_ "],
+    "3": [" _ ", " _|", " _|"],
+    "4": ["   ", "|_|", "  |"],
+    "5": [" _ ", "|_ ", " _|"],
+    "6": [" _ ", "|_ ", "|_|"],
+    "7": [" _ ", "  |", "  |"],
+    "8": [" _ ", "|_|", "|_|"],
+    "9": [" _ ", "|_|", " _|"],
+}
+
 
 def fit(text):
     cols = int(getattr(lcd, "COLS", 16))
@@ -134,11 +147,23 @@ class StatusApp(object):
 
     def clock_lines(self):
         now = datetime.datetime.now()
-        return [
-            now.strftime("%H:%M:%S"),
-            now.strftime("%a %b %d"),
-            now.strftime("%Y"),
-        ]
+        rows = int(getattr(lcd, "ROWS", 2))
+        if rows < 3:
+            return [now.strftime("%H:%M"), now.strftime("%a %b %d"), ""]
+
+        hhmm = now.strftime("%H%M")
+        digits = [DIGIT_GLYPHS.get(char, DIGIT_GLYPHS["0"]) for char in hhmm]
+
+        blink_colon = self.settings.get("clock_blink_colon", True)
+        show_colon = (not blink_colon) or (now.second % 2 == 0)
+        separator_rows = [" ", ":" if show_colon else " ", ":" if show_colon else " "]
+
+        lines = []
+        for row in range(3):
+            line = " " + digits[0][row] + " " + digits[1][row] + separator_rows[row] + digits[2][row] + " " + digits[3][row]
+            lines.append(line)
+
+        return lines
 
     def system_lines(self):
         return [

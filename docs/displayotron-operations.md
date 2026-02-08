@@ -41,7 +41,7 @@ ssh rpi "displayotron-menu"
 
 While `displayotron-status` is running:
 
-- Page 1: 3-line clock view
+- Page 1: large 3-line `HH:MM` digital clock
 - Page 2: IP + uptime
 
 Controls:
@@ -64,6 +64,7 @@ Settings currently available:
 - Theme preset (`Blue`, `Green`, `Amber`, `White`, `Purple`, `Off`)
 - Backlight brightness (`0-100%`, 10% steps)
 - LCD contrast (`0-63`, 2-step increments)
+- `ClockBlink` toggle (blink/steady colon in status clock view)
 - `StatusSvc` toggle (start/stop `displayotron-status` when menu exits)
 
 ## Known hardware limitation: no true text rotation

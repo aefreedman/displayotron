@@ -20,7 +20,7 @@ from displayotron_common import theme_name
 
 SERVICE_NAME = "displayotron-status"
 
-ITEMS = ["Theme", "Bright", "Contrast", "StatusSvc", "SaveExit"]
+ITEMS = ["Theme", "Bright", "Contrast", "ClockBlink", "StatusSvc", "SaveExit"]
 
 
 def fit(text):
@@ -65,6 +65,8 @@ class MenuApp(object):
             return "{}%".format(self.settings["brightness"])
         if item == "Contrast":
             return "{}".format(self.settings["contrast"])
+        if item == "ClockBlink":
+            return "{}".format("on" if self.settings["clock_blink_colon"] else "off")
         if item == "StatusSvc":
             return "{}".format("on" if self.settings["status_service_enabled"] else "off")
         return "B=save C=quit"
@@ -90,6 +92,9 @@ class MenuApp(object):
             self.settings["brightness"] = clamp(self.settings["brightness"] + (delta * 10), 0, 100)
         elif item == "Contrast":
             self.settings["contrast"] = clamp(self.settings["contrast"] + (delta * 2), 0, 63)
+        elif item == "ClockBlink":
+            if delta != 0:
+                self.settings["clock_blink_colon"] = not self.settings["clock_blink_colon"]
         elif item == "StatusSvc":
             if delta != 0:
                 self.settings["status_service_enabled"] = not self.settings["status_service_enabled"]
