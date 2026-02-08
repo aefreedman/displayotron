@@ -37,14 +37,25 @@ def clamp(value, low, high):
     return max(low, min(high, value))
 
 
-def pulse_graph(duration_seconds):
-    pattern = [0.0, 0.2, 0.45, 0.7, 1.0, 0.55, 0.25, 0.0]
-    end_time = time.time() + duration_seconds
-    index = 0
-    while time.time() < end_time:
-        backlight.set_graph(pattern[index % len(pattern)])
-        index += 1
-        time.sleep(0.18)
+def clear_graph_leds():
+    num_leds = int(getattr(backlight, "NUM_LEDS", 6))
+    for led in range(num_leds):
+        backlight.graph_set_led_polarity(led, 0)
+        backlight.graph_set_led_state(led, 0)
+
+
+def flash_edge_leds(flash_seconds):
+    num_leds = int(getattr(backlight, "NUM_LEDS", 6))
+    first = 0
+    last = max(0, num_leds - 1)
+
+    clear_graph_leds()
+    for led in (first, last):
+        backlight.graph_set_led_polarity(led, 1)
+        backlight.graph_set_led_state(led, 0)
+
+    time.sleep(clamp(float(flash_seconds), 0.05, 2.0))
+    clear_graph_leds()
 
 
 def split_text_lines(text, line_count):
@@ -185,7 +196,8 @@ def main():
             lcd.set_cursor_position(0, row)
             lcd.write(fit(lines[row] if row < len(lines) else ""))
 
-        pulse_graph(duration)
+        flash_edge_leds(0.2)
+        time.sleep(duration)
         print("NOTIFY_OK")
     finally:
         try:
