@@ -1,0 +1,11 @@
+# Local/editor noise
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.swp
+*.swo
+
+# Python cache
+__pycache__/
+*.pyc
