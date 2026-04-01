@@ -22,6 +22,23 @@ This repo tracks local scripts and service files for a Raspberry Pi with a Pimor
 - Passwordless sudo for the Raspberry Pi user (already configured)
 - Display-O-Tron stack installed on the Raspberry Pi device
 
+## Development
+
+Install test dependencies:
+
+```bash
+python3 -m pip install -r requirements-dev.txt
+```
+
+Run local checks that do not require hardware:
+
+```bash
+python3 -m compileall -q scripts
+bash -n scripts/displayotron-check.sh
+bash -n scripts/deploy-to-pi.sh
+python3 -m pytest -m "not pi" -q
+```
+
 ## Deploy
 
 From this repo root:
