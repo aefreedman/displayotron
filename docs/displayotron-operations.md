@@ -5,12 +5,12 @@
 ```bash
 bash scripts/deploy-to-pi.sh --enable --start
 ```
+
 With an explicit SSH target:
 
 ```bash
 bash scripts/deploy-to-pi.sh --host user@your-pi-host --enable --start
 ```
-
 
 This deploy also copies `config/displayotron-settings.json` to:
 
