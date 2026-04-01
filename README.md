@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/aefreedman/displayotron/actions/workflows/ci.yml/badge.svg)](https://github.com/aefreedman/displayotron/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/aefreedman/displayotron)](https://github.com/aefreedman/displayotron/releases)
 
 This repo tracks local scripts and service files for a Raspberry Pi with a Pimoroni Display-O-Tron HAT.
 
