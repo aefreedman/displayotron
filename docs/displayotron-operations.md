@@ -1,10 +1,16 @@
 # Display-O-Tron operations
 
-## Deploy tracked scripts to Pi
+## Deploy tracked scripts to the Raspberry Pi device
 
 ```bash
 bash scripts/deploy-to-pi.sh --enable --start
 ```
+With an explicit SSH target:
+
+```bash
+bash scripts/deploy-to-pi.sh --host user@your-pi-host --enable --start
+```
+
 
 This deploy also copies `config/displayotron-settings.json` to:
 

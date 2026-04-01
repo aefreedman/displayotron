@@ -1,4 +1,4 @@
-# Pi repo TODO
+# Display-O-Tron repo TODO
 
 - [ ] Add `displayotron-charset-sweep` utility to map supported LCD characters.
   - Generate a paged on-device character matrix (candidate bytes/chars).

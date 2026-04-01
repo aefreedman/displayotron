@@ -1,4 +1,4 @@
-# Pi Display-O-Tron toolkit
+# Display-O-Tron toolkit
 
 This repo tracks local scripts and service files for a Raspberry Pi with a Pimoroni Display-O-Tron HAT.
 
@@ -10,8 +10,8 @@ This repo tracks local scripts and service files for a Raspberry Pi with a Pimor
 - `scripts/displayotron-notify.py` - temporary notification overlay on the LCD + side LEDs
 - `scripts/displayotron-safe-unplug.py` - shutdown hook display message for safe unplug indication
 - `scripts/displayotron_common.py` - shared settings/theme helpers used by scripts
-- `scripts/deploy-to-pi.sh` - deploy tracked scripts and service files to a Pi
-- `config/displayotron-settings.json` - tracked settings file deployed to Pi
+- `scripts/deploy-to-pi.sh` - deploy tracked scripts and service files to a Raspberry Pi device
+- `config/displayotron-settings.json` - tracked settings file deployed to the Raspberry Pi device
 - `systemd/displayotron-status.service` - systemd unit for the status display loop
 - `systemd/displayotron-safe-unplug.service` - systemd unit that shows "SAFE TO UNPLUG" during shutdown
 - `docs/displayotron-operations.md` - quick operations reference
@@ -19,9 +19,9 @@ This repo tracks local scripts and service files for a Raspberry Pi with a Pimor
 
 ## Requirements
 
-- SSH access to the Pi (`rpi` host alias in your SSH config)
-- Passwordless sudo on Pi user (already configured)
-- Display-O-Tron stack installed on Pi
+- SSH access to the Raspberry Pi device (`rpi` host alias in your SSH config)
+- Passwordless sudo for the Raspberry Pi user (already configured)
+- Display-O-Tron stack installed on the Raspberry Pi device
 
 ## Deploy
 
@@ -31,10 +31,10 @@ From this repo root:
 bash scripts/deploy-to-pi.sh --enable --start
 ```
 
-If your SSH alias is not `rpi`:
+If your SSH alias is not `rpi`, pass an explicit SSH target:
 
 ```bash
-bash scripts/deploy-to-pi.sh --host pi@raspberrypi.local --enable --start
+bash scripts/deploy-to-pi.sh --host user@your-pi-host --enable --start
 ```
 
 ## Verify
@@ -77,7 +77,7 @@ The shutdown indicator keeps side LEDs off.
 ## Settings source of truth
 
 - Repo file: `config/displayotron-settings.json`
-- Deployed file on Pi: `/home/pi/.config/displayotron/settings.json`
+- Deployed file on the Raspberry Pi device: `/home/pi/.config/displayotron/settings.json`
 
 `displayotron-menu` and `displayotron-status` both read the same deployed settings file.
 Editing `config/displayotron-settings.json` in this repo and redeploying will update live behavior.
