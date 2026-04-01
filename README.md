@@ -15,7 +15,6 @@ This repo tracks local scripts and service files for a Raspberry Pi with a Pimor
 - `systemd/displayotron-status.service` - systemd unit for the status display loop
 - `systemd/displayotron-safe-unplug.service` - systemd unit that shows "SAFE TO UNPLUG" during shutdown
 - `docs/displayotron-operations.md` - quick operations reference
-- `migration-plan.md` - Stretch -> Bookworm migration plan
 
 ## Requirements
 
