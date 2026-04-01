@@ -1,5 +1,8 @@
 # Display-O-Tron toolkit
 
+[![CI](https://github.com/aefreedman/displayotron/actions/workflows/ci.yml/badge.svg)](https://github.com/aefreedman/displayotron/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 This repo tracks local scripts and service files for a Raspberry Pi with a Pimoroni Display-O-Tron HAT.
 
 ## Layout
